@@ -1,0 +1,6 @@
+name: "Adjusted capacity"
+
+overrides:
+  wards:
+    - id: "WARD_A"
+      capacity: 18

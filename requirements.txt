@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+scikit-learn
+lightgbm
+statsmodels
+simpy
+joblib
+rich
+pyyaml
+typer
+streamlit

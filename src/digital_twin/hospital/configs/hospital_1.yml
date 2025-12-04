@@ -1,0 +1,114 @@
+simulation:
+  data_dir: "digital_twin/hospital/data"
+  horizon_days: 180
+  n_runs_mc: 3000
+  sla_alpha: 0.05
+  random_seed: 42
+  capacity_default: 36
+  service_default: "surgery"
+
+hospital:
+  name: "Example Hospital 1"
+  timezone: "Europe/Amsterdam"
+  simulation_horizon_days: 180
+
+wards:
+  - id: "SEH"
+    name: "Spoedeisende Hulp"
+    type: "ED"
+    capacity: 12
+    los_model:
+      type: "lognormal"
+      params: {mu: 1.0, sigma: 0.5}
+
+  - id: "ICU"
+    name: "Intensive Care"
+    type: "ICU"
+    capacity: 10
+    los_model:
+      type: "gamma"
+      params: {shape: 2.1, scale: 1.3}
+
+  - id: "WARD_A"
+    name: "Chirurgische afdeling"
+    type: "WARD"
+    capacity: 24
+    los_model:
+      type: "from_data"
+      params:
+        service: "surgery"
+
+  - id: "WARD_B"
+    name: "Interne afdeling"
+    type: "WARD"
+    capacity: 20
+    los_model:
+      type: "empirical_histogram"
+      source: "los_interne.csv"
+
+patient_types:
+  - id: "ED_SPOED"
+    description: "SEH spoedpatiënt"
+    priority: 100
+  - id: "ELECTIVE_CHIR"
+    description: "Electieve chirurgie"
+    priority: 50
+  - id: "IC_POSTOP"
+    description: "Postoperatieve IC-patiënt"
+    priority: 80
+
+arrival_streams:
+  - id: "arr_ed_spoed"
+    target_ward: "SEH"
+    patient_type: "ED_SPOED"
+    model:
+      type: "ml_poisson"
+      source: "ed_arrivals.csv"
+      seasonal_features: ["dow", "month"]
+
+  - id: "arr_elective_chir"
+    target_ward: "WARD_A"
+    patient_type: "ELECTIVE_CHIR"
+    model:
+      type: "schedule"
+      pattern: "Mon,Tue,Thu"
+      mean_per_day: 5
+
+routing:
+  - from_ward: "SEH"
+    patient_type: "ED_SPOED"
+    options:
+      - to_ward: "ICU"
+        probability: 0.2
+      - to_ward: "WARD_A"
+        probability: 0.4
+      - to_ward: "WARD_B"
+        probability: 0.4
+
+  - from_ward: "ICU"
+    patient_type: "IC_POSTOP"
+    options:
+      - to_ward: "WARD_A"
+        probability: 0.9
+      - to_ward: "WARD_B"
+        probability: 0.1
+
+policies:
+  priorities:
+    # higher values indicate higher importance
+    - ward: "SEH"
+      patient_type: "ED_SPOED"
+      priority: 100
+    - ward: "WARD_A"
+      patient_type: "ELECTIVE_CHIR"
+      priority: 50
+
+  overflow:
+    - ward: "WARD_A"
+      threshold: 0.95
+      redirect_to: "WARD_B"
+
+  admission_stop:
+    - ward: "WARD_A"
+      threshold: 0.98
+      stop_types: ["ELECTIVE_CHIR"]

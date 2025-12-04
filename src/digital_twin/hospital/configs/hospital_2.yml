@@ -1,0 +1,53 @@
+simulation:
+  data_dir: "digital_twin/hospital/data"
+  horizon_days: 180
+  n_runs_mc: 3000
+  sla_alpha: 0.05
+  random_seed: 42
+  capacity_default: 36
+  service_default: "surgery"
+
+wards:
+  - id: "ED"
+    type: "SEH"
+    capacity: 30
+    los_model:
+      type: "from_data"
+      params:
+        service: "emergency"
+
+  - id: "IC"
+    type: "ICU"
+    capacity: 12
+    los_model:
+      type: "from_data"
+      params:
+        service: "ICU"
+
+  - id: "WARD_A"
+    type: "WARD"
+    capacity: 24
+    los_model:
+      type: "from_data"
+      params:
+        service: "surgery"
+
+routes:
+  - from: "ED"
+    to:
+      - id: "IC"
+        p: 0.20
+      - id: "WARD_A"
+        p: 0.80
+
+  - from: "IC"
+    to:
+      - id: "WARD_A"
+        p: 0.90
+      - id: "EXIT"
+        p: 0.10
+
+  - from: "WARD_A"
+    to:
+      - id: "EXIT"
+        p: 1.0

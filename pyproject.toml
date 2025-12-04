@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digital-twin"
+version = "0.1.0"
+description = "Procesflow simulation app"
+authors = [
+  { name = "Tobias Beers" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+  'pyyaml',
+  'streamlit',
+  'pandas',
+  'numpy',
+  'matplotlib',
+  'scikit-learn',
+  'lightgbm',
+  'statsmodels',
+  'simpy',
+  'joblib',
+  'rich',
+  'typer'
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+digital-twin = "digital_twin.main_cli.cli:main"
