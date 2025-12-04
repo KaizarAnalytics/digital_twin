@@ -1,8 +1,11 @@
 import pandas as pd
 from pathlib import Path
+import os
 
 def load_patients(data_dir: str) -> pd.DataFrame:
     p = Path(data_dir) / "raw" / "patients.csv"
+    if not os.path.isdir(p):
+        p = Path(data_dir) / "patients.csv"
     df = pd.read_csv(p, parse_dates=["arrival_date","departure_date"])
     return df
 
