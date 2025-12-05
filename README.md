@@ -89,12 +89,9 @@ model = train_lgbm_poisson(X, y)
 
 ## Data Usage Notice
 
-This project references the **`jaderz/hospital-beds-management`** dataset from Kaggle:
+This project references the **`jaderz/hospital-beds-management`** dataset from Kaggle under license CC0:
 
 [https://www.kaggle.com/datasets/jaderz/hospital-beds-management](https://www.kaggle.com/datasets/jaderz/hospital-beds-management)
-
-The dataset is **not redistributed** inside this repository.
-Users must download / attach the dataset directly via Kaggle for full reproducibility.
 
 All example CSVs in `digital_twin/hospital/data/raw/` are **synthetic** and contain *no real patient information*.
 
