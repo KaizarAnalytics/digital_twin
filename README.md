@@ -6,6 +6,22 @@ Combines **discrete-event simulation**, **Monte Carlo uncertainty modeling**, an
 This open-core version contains the full simulation + forecasting engine used by Kaizar.
 Integration layers, production APIs, and orchestration pipelines remain proprietary.
 
+Full case description available at:
+https://kaizar.nl/posts/post.html?slug=capacity
+
+---
+
+## Example impact (demo configuration)
+
+Using the synthetic workflow scenario included in this repo:
+- 2–3× utilisation observed at critical stations under high-demand stress tests.
+- ≈80% reduction in overload days after targeted capacity adjustments in the simulation.
+- Clear breakpoints where ~3× demand first pushes the system into SLA-risk territory.
+- ~40% recoverable baseline capacity identified through bottleneck tracing and slack analysis.
+
+These metrics are indicative for the demo setup.
+Real operational performance depends on your workflow, routing rules and demand patterns.
+
 ---
 
 ## Features
