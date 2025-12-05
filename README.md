@@ -90,11 +90,12 @@ model = train_lgbm_poisson(X, y)
 ## Data Usage Notice
 
 This project includes synthetic example data for demonstration purposes only.
-The structure and field names are inspired by the jaderz/hospital-beds-management dataset from Kaggle, which is published under the CC0 license:
+The structure and field names are inspired by the **`jaderz/hospital-beds-management`** dataset from Kaggle, which is published under the **CC0** license:
 
-https://www.kaggle.com/datasets/jaderz/hospital-beds-management
+[https://www.kaggle.com/datasets/jaderz/hospital-beds-management](https://www.kaggle.com/datasets/jaderz/hospital-beds-management)
 
-All CSVs under digital_twin/hospital/data/raw/ are fully synthetic and contain no real patient information, no re-identifiable fields, and no protected health data.
+All CSVs under `digital_twin/hospital/data/raw/` are **fully synthetic** and contain **no real patient information**, no re-identifiable fields, and no protected health data.
+
 ---
 
 ## License
