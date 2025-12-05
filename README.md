@@ -7,7 +7,7 @@ This open-core version contains the full simulation + forecasting engine used by
 Integration layers, production APIs, and orchestration pipelines remain proprietary.
 
 Full case description available at:
-https://kaizar.nl/posts/post.html?slug=capacity
+https://kaizar.nl/posts/digital-twin.html
 
 ---
 
