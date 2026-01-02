@@ -4,28 +4,54 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "digital-twin"
-version = "0.1.0"
-description = "Procesflow simulation app"
+version = "0.2.0"
+description = "A simulation-first digital twin for capacity planning, combining discrete-event simulation, Monte Carlo uncertainty modeling, and ML-based arrival forecasting."
 authors = [
-  { name = "Tobias Beers" }
+  { name = "Tobias J. Beers" }
 ]
 readme = "README.md"
 requires-python = ">=3.10"
+license = {text = "Proprietary - Open Core"}
+keywords = ["simulation", "digital-twin", "capacity-planning", "healthcare", "discrete-event-simulation", "monte-carlo"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 
 dependencies = [
-  'pyyaml',
-  'streamlit',
-  'pandas',
-  'numpy',
-  'matplotlib',
-  'scikit-learn',
-  'lightgbm',
-  'statsmodels',
-  'simpy',
-  'joblib',
-  'rich',
-  'typer'
+  "pyyaml>=6.0",
+  "pandas>=2.0",
+  "numpy>=1.24",
+  "matplotlib>=3.7",
+  "scikit-learn>=1.3",
+  "lightgbm>=4.0",
+  "statsmodels>=0.14",
+  "simpy>=4.0",
+  "joblib>=1.3",
+  "rich>=13.0",
+  "typer>=0.9",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1",
+]
+notebooks = [
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
+
+[project.urls]
+Homepage = "https://kaizar.nl"
+Repository = "https://github.com/KaizarAnalytics/digital_twin"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -35,3 +61,11 @@ where = ["src"]
 
 [project.scripts]
 digital-twin = "digital_twin.main_cli.cli:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]

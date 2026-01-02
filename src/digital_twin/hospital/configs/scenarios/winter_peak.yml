@@ -1,9 +1,9 @@
-name: "Winterpeak"
-description: "30% more arrivals"
+name: "Winter Peak"
+description: "30% increase in arrivals during winter months"
 
 overrides:
   arrival_streams:
-    - id: "arr_ed_spoed"
+    - id: "arr_ed_emergency"
       model:
         scale_factor_by_month:
           "12": 1.3

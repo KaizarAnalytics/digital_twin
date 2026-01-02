@@ -1,129 +1,156 @@
-# Kaizar Digital Twin (Open Core)
+# Digital Twin - Capacity Planning Simulation Engine
 
-A modular, simulation-first digital twin for hospital capacity planning.
-Combines **discrete-event simulation**, **Monte Carlo uncertainty modeling**, and **ML-based arrival forecasting** into a cohesive, reproducible framework.
+A Monte Carlo simulation engine for capacity planning and risk assessment. Run thousands of stochastic scenarios to quantify uncertainty and find optimal capacity levels.
 
-This open-core version contains the full simulation + forecasting engine used by Kaizar.
-Integration layers, production APIs, and orchestration pipelines remain proprietary.
+This open-core version contains the Monte Carlo simulation engine, Discrete Event Simulation (DES), and ML-based arrival forecasting. Optimization algorithms and production infrastructure remain proprietary.
 
-Full case description available at:
-https://kaizar.nl/posts/digital-twin.html
+## Key Capabilities
 
----
+- **Monte Carlo Simulation**: Run thousands of stochastic scenarios to quantify uncertainty and risk
+- **Discrete Event Simulation**: SimPy-based patient flow modeling with multi-ward routing
+- **ML Arrival Forecasting**: LightGBM-based forecasting of future arrivals with calendar features
+- **Config-driven Architecture**: YAML-based hospital configurations for reproducible scenarios
+- **Risk Metrics**: Overflow probability, capacity utilization, and SLA compliance analysis
 
-## Example impact (demo configuration)
+## Example Results
 
-Using the synthetic workflow scenario included in this repo:
-- 2–3× utilisation observed at critical stations under high-demand stress tests.
-- ≈80% reduction in overload days after targeted capacity adjustments in the simulation.
-- Clear breakpoints where ~3× demand first pushes the system into SLA-risk territory.
-- ~40% recoverable baseline capacity identified through bottleneck tracing and slack analysis.
+Using the synthetic demo configuration included in this repository:
 
-These metrics are indicative for the demo setup.
-Real operational performance depends on your workflow, routing rules and demand patterns.
+| Metric | Value |
+|--------|-------|
+| Simulation horizon | 180 days |
+| Monte Carlo replications | 3,000 |
+| Capacity | 20 beds |
+| P(overflow) | < 1% |
 
----
-
-## Features
-
-* **Synthetic patient-flow generation** & stochastic arrivals
-* **Discrete Event Simulation (SimPy)** for bed occupancy, queues, and service pathways
-* **Monte Carlo scenario engine** for robustness under uncertainty
-* **ML forecasting module** using LightGBM (Poisson regression)
-* **Config-driven architecture** (YAML hospital configs, reproducible scenarios)
-* **Clear separation of simulation, forecasting, and data prep**
-* **Jupyter notebooks for exploration, Kaggle-ready variants included**
-
----
+The simulation quantifies the probability of capacity overflow, accounting for stochastic arrivals and variable length-of-stay.
 
 ## Repository Structure
 
 ```
 src/
   digital_twin/
-    hospital/      # Synthetic data, preprocessing, configs, exploration helpers
-    core/          # Simulation engine, DES components, Monte Carlo logic
-    forecasts/     # ML arrival forecasting (features, models, backtesting)
-notebooks/         # Simulation & ML demonstration notebooks
-pyproject.toml     # Project metadata + dependencies
-requirements.txt
+    core/           # Monte Carlo simulation engine
+    hospital/       # Data preprocessing, config loading
+    output/         # Metrics and visualization
+    main_cli/       # Command-line interface
+notebooks/          # Demonstration notebook
+pyproject.toml      # Project metadata and dependencies
 ```
-
-The production stack (APIs, monitoring, scheduling, dashboards) is **not included**.
-
----
 
 ## Installation
 
 ### From source
 
 ```bash
-pip install -r requirements.txt
-```
-
-Or install as an editable package:
-
-```bash
+git clone https://github.com/KaizarAnalytics/digital_twin.git
+cd digital_twin
 pip install -e .
 ```
 
----
+Or install dependencies directly:
 
-## Usage
+```bash
+pip install -r requirements.txt
+```
 
-### Run a simulation
+## Quick Start
+
+### Command Line Interface
+
+```bash
+# Run a Monte Carlo simulation
+digital-twin simulate --beds 20 --runs 5000
+
+# Show help
+digital-twin info
+```
+
+### Example Script
+
+Run the included quickscan example:
+
+```bash
+python examples/quickscan.py
+```
+
+### Python API
 
 ```python
-from digital_twin.core.simulation import simulate_hospital
+from digital_twin.hospital.data_prep import load_patients, arrivals_per_day, los_values
 from digital_twin.hospital.config_loader import load_hospital_config
+from digital_twin.core.mc_simulator import simulate_occupancy, make_arrival_sampler
+import numpy as np
 
-config = load_hospital_config("digital_twin/hospital/configs/hospital_1.yml").simulation
-results = simulate_hospital(config=config, seed=42)
-results.head()
+# Load config and data
+config = load_hospital_config("src/digital_twin/hospital/configs/hospital_1.yml")
+patients = load_patients(config.simulation["data_dir"])
+arrivals = arrivals_per_day(patients, config.simulation["service_default"])
+
+# Build samplers
+rng = np.random.default_rng(42)
+arrival_sampler = make_arrival_sampler(arrivals["arrivals"])
+los = los_values(patients, config.simulation["service_default"])
+los_sampler = lambda n: rng.choice(los, size=n, replace=True)
+
+# Run simulation
+max_occ, overflow_days = simulate_occupancy(
+    days=180,
+    n_runs=3000,
+    beds=20,
+    arrival_sampler=arrival_sampler,
+    processtime_sampler=los_sampler,
+)
+
+print(f"Mean max occupancy: {max_occ.mean():.1f}")
+print(f"P(overflow): {(max_occ > 20).mean():.2%}")
 ```
 
-### Generate synthetic arrivals
+## Notebooks
 
-```python
-from digital_twin.hospital.data_prep import load_patients, arrivals_per_day
+Interactive demonstrations available in the `notebooks/` directory:
 
-patients = load_patients()
-arrivals = arrivals_per_day(patients)
+- **01_quickscan_digital_twin.ipynb** - Monte Carlo capacity analysis
+- **02_poc_ml_forecast_digital_twin.ipynb** - ML-based arrival forecasting with LightGBM
+- **04_generate_capacity_kpis.ipynb** - DES-based scenario analysis and KPI generation
+
+## Configuration
+
+Hospital configurations are defined in YAML files under `src/digital_twin/hospital/configs/`:
+
+```yaml
+simulation:
+  horizon_days: 180
+  n_runs_mc: 3000
+  capacity_default: 20
+
+hospital:
+  name: "Example Hospital"
+  timezone: "UTC"
 ```
 
-### Train an ML forecaster
+## Testing
 
-```python
-from digital_twin.forecasts.model import train_lgbm_poisson
-from digital_twin.forecasts.features import make_feature_table
+Run the test suite:
 
-X, y = make_feature_table(arrivals)
-model = train_lgbm_poisson(X, y)
+```bash
+pip install -e ".[dev]"
+pytest -v
 ```
 
----
+## Data Notice
 
-## Data Usage Notice
-
-This project includes synthetic example data for demonstration purposes only.
-The structure and field names are inspired by the **`jaderz/hospital-beds-management`** dataset from Kaggle, which is published under the **CC0** license:
-
-[https://www.kaggle.com/datasets/jaderz/hospital-beds-management](https://www.kaggle.com/datasets/jaderz/hospital-beds-management)
-
-All CSVs under `digital_twin/hospital/data/raw/` are **fully synthetic** and contain **no real patient information**, no re-identifiable fields, and no protected health data.
-
----
+This project includes synthetic example data for demonstration purposes only. All CSVs under `src/digital_twin/hospital/data/raw/` are **fully synthetic** and contain no real patient information.
 
 ## License
 
-Source code © Kaizar.
-Open-core components are provided for research, learning, and experimentation.
-Commercial deployment of proprietary modules is *not permitted*.
+Source code is proprietary to Kaizar Analytics. Open-core components are provided for research, learning, and experimentation. Commercial deployment requires a license agreement.
 
----
+## Further Reading
 
-## Author
+- [Process Capacity Digital Twin](https://kaizar.nl/posts/digital-twin.html) - Case study demonstrating how simulation reveals hidden capacity and operational bottlenecks
+- [Building a Digital Clone Protocol (Part I)](https://medium.com/@tobias.beers_63234/building-a-digital-clone-protocol-i-how-organisations-navigate-the-future-using-their-own-0728a4530108) - Conceptual series on how organizations navigate uncertainty using simulation
 
-Developed by **Kaizar** — simulation engines, forecasting systems, and applied decision intelligence.
+## About
 
----
+Developed by [Kaizar](https://kaizar.nl) - simulation engines, forecasting systems, and applied decision intelligence.

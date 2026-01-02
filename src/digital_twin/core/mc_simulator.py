@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from digital_twin.core.arrivals_ml import sample_arrivals_from_mu
+
 
 def make_arrival_sampler(arrivals_per_day: pd.Series, rng=None):
     rng = rng or np.random.default_rng(42)
@@ -83,7 +83,8 @@ def simulate_from_mu_series(
     come from an ML forecast (mu_series).
     Returns (max_occupancies, overflow_days_counts).
     """
-    
+    from digital_twin.core.arrivals_ml import sample_arrivals_from_mu
+
     rng = rng or np.random.default_rng(42)
     mu_series = mu_series.sort_index()
     days = len(mu_series)

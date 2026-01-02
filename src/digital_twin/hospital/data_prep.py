@@ -3,10 +3,11 @@ from pathlib import Path
 import os
 
 def load_patients(data_dir: str) -> pd.DataFrame:
+    """Load patient data from CSV file."""
     p = Path(data_dir) / "raw" / "patients.csv"
-    if not os.path.isdir(p):
+    if not p.exists():
         p = Path(data_dir) / "patients.csv"
-    df = pd.read_csv(p, parse_dates=["arrival_date","departure_date"])
+    df = pd.read_csv(p, parse_dates=["arrival_date", "departure_date"])
     return df
 
 def arrivals_per_day(df_patients: pd.DataFrame, service: str) -> pd.DataFrame:

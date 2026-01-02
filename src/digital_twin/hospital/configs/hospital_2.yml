@@ -7,16 +7,23 @@ simulation:
   capacity_default: 36
   service_default: "surgery"
 
+hospital:
+  name: "Example Hospital 2"
+  timezone: "UTC"
+  simulation_horizon_days: 180
+
 wards:
   - id: "ED"
-    type: "SEH"
+    name: "Emergency Department"
+    type: "ED"
     capacity: 30
     los_model:
       type: "from_data"
       params:
         service: "emergency"
 
-  - id: "IC"
+  - id: "ICU"
+    name: "Intensive Care Unit"
     type: "ICU"
     capacity: 12
     los_model:
@@ -25,6 +32,7 @@ wards:
         service: "ICU"
 
   - id: "WARD_A"
+    name: "Surgical Ward"
     type: "WARD"
     capacity: 24
     los_model:
@@ -32,22 +40,23 @@ wards:
       params:
         service: "surgery"
 
-routes:
+routing:
   - from: "ED"
-    to:
-      - id: "IC"
-        p: 0.20
-      - id: "WARD_A"
-        p: 0.80
+    to: "ICU"
+    p: 0.20
 
-  - from: "IC"
-    to:
-      - id: "WARD_A"
-        p: 0.90
-      - id: "EXIT"
-        p: 0.10
+  - from: "ED"
+    to: "WARD_A"
+    p: 0.80
+
+  - from: "ICU"
+    to: "WARD_A"
+    p: 0.90
+
+  - from: "ICU"
+    to: "EXIT"
+    p: 0.10
 
   - from: "WARD_A"
-    to:
-      - id: "EXIT"
-        p: 1.0
+    to: "EXIT"
+    p: 1.0

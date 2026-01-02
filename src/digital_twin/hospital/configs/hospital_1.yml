@@ -9,12 +9,12 @@ simulation:
 
 hospital:
   name: "Example Hospital 1"
-  timezone: "Europe/Amsterdam"
+  timezone: "UTC"
   simulation_horizon_days: 180
 
 wards:
-  - id: "SEH"
-    name: "Spoedeisende Hulp"
+  - id: "ED"
+    name: "Emergency Department"
     type: "ED"
     capacity: 12
     los_model:
@@ -22,7 +22,7 @@ wards:
       params: {mu: 1.0, sigma: 0.5}
 
   - id: "ICU"
-    name: "Intensive Care"
+    name: "Intensive Care Unit"
     type: "ICU"
     capacity: 10
     los_model:
@@ -30,7 +30,7 @@ wards:
       params: {shape: 2.1, scale: 1.3}
 
   - id: "WARD_A"
-    name: "Chirurgische afdeling"
+    name: "Surgical Ward"
     type: "WARD"
     capacity: 24
     los_model:
@@ -39,44 +39,45 @@ wards:
         service: "surgery"
 
   - id: "WARD_B"
-    name: "Interne afdeling"
+    name: "General Medicine Ward"
     type: "WARD"
     capacity: 20
     los_model:
-      type: "empirical_histogram"
-      source: "los_interne.csv"
+      type: "from_data"
+      params:
+        service: "general_medicine"
 
 patient_types:
-  - id: "ED_SPOED"
-    description: "SEH spoedpatiënt"
+  - id: "ED_EMERGENCY"
+    description: "Emergency department patient"
     priority: 100
-  - id: "ELECTIVE_CHIR"
-    description: "Electieve chirurgie"
+  - id: "ELECTIVE_SURG"
+    description: "Elective surgery patient"
     priority: 50
-  - id: "IC_POSTOP"
-    description: "Postoperatieve IC-patiënt"
+  - id: "ICU_POSTOP"
+    description: "Post-operative ICU patient"
     priority: 80
 
 arrival_streams:
-  - id: "arr_ed_spoed"
-    target_ward: "SEH"
-    patient_type: "ED_SPOED"
+  - id: "arr_ed_emergency"
+    target_ward: "ED"
+    patient_type: "ED_EMERGENCY"
     model:
       type: "ml_poisson"
       source: "ed_arrivals.csv"
       seasonal_features: ["dow", "month"]
 
-  - id: "arr_elective_chir"
+  - id: "arr_elective_surg"
     target_ward: "WARD_A"
-    patient_type: "ELECTIVE_CHIR"
+    patient_type: "ELECTIVE_SURG"
     model:
       type: "schedule"
       pattern: "Mon,Tue,Thu"
       mean_per_day: 5
 
 routing:
-  - from_ward: "SEH"
-    patient_type: "ED_SPOED"
+  - from_ward: "ED"
+    patient_type: "ED_EMERGENCY"
     options:
       - to_ward: "ICU"
         probability: 0.2
@@ -86,7 +87,7 @@ routing:
         probability: 0.4
 
   - from_ward: "ICU"
-    patient_type: "IC_POSTOP"
+    patient_type: "ICU_POSTOP"
     options:
       - to_ward: "WARD_A"
         probability: 0.9
@@ -95,12 +96,11 @@ routing:
 
 policies:
   priorities:
-    # higher values indicate higher importance
-    - ward: "SEH"
-      patient_type: "ED_SPOED"
+    - ward: "ED"
+      patient_type: "ED_EMERGENCY"
       priority: 100
     - ward: "WARD_A"
-      patient_type: "ELECTIVE_CHIR"
+      patient_type: "ELECTIVE_SURG"
       priority: 50
 
   overflow:
@@ -111,4 +111,4 @@ policies:
   admission_stop:
     - ward: "WARD_A"
       threshold: 0.98
-      stop_types: ["ELECTIVE_CHIR"]
+      stop_types: ["ELECTIVE_SURG"]
